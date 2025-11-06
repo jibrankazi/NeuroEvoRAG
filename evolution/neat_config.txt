@@ -1,0 +1,9 @@
+# NEAT configuration for the NeuroEvoRAG pipeline
+[NEAT]
+fitness_criterion = max
+fitness_threshold = 100.0
+pop_size = 50
+reset_on_extinction = False
+
+[DefaultGenome]
+# Additional genome parameters can be specified here
