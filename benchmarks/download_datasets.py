@@ -1,46 +1,38 @@
+# benchmarks/download_datasets.py
 import os
-import subprocess
+from datasets import load_dataset
+import requests
+from tqdm import tqdm
 
+def download_file(url, dest):
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+    with open(dest, 'wb') as f:
+        for chunk in tqdm(response.iter_content(chunk_size=8192), desc=os.path.basename(dest)):
+            f.write(chunk)
 
 def download_hotpotqa():
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
-    subprocess.run([
-        "wget", "https://huggingface.co/datasets/hotpotqa/resolve/main/hotpot_train_v1.1.json",
-        "-O", "benchmarks/datasets/hotpotqa/train.json"
-    ])
-    subprocess.run([
-        "wget", "https://huggingface.co/datasets/hotpotqa/resolve/main/hotpot_dev_distractor_v1.json",
-        "-O", "benchmarks/datasets/hotpotqa/dev.json"
-    ])
-
+    train_url = "https://huggingface.co/datasets/hotpotqa/resolve/main/hotpot_train_v1.1.json"
+    dev_url = "https://huggingface.co/datasets/hotpotqa/resolve/main/hotpot_dev_distractor_v1.json"
+    download_file(train_url, "benchmarks/datasets/hotpotqa/train.json")
+    download_file(dev_url, "benchmarks/datasets/hotpotqa/dev.json")
 
 def download_mmqa():
-    os.makedirs("benchmarks/datasets/mmqa", exist_ok=True)
-    subprocess.run([
-        "git", "clone", "https://github.com/MMQA/MMQA.git",
-        "benchmarks/datasets/mmqa"
-    ])
-
+    print("MMQA requires cloning repo with images — using datasets library instead...")
+    ds = load_dataset("MMQA/MMQA", split="test")
+    ds.save_to_disk("benchmarks/datasets/mmqa")
 
 def download_spokenhotpotqa():
-    # Install datasets package and load SpokenHotpotQA from Hugging Face
-    subprocess.run([
-        "pip", "install", "datasets"
-    ])
-    from datasets import load_dataset
+    print("Downloading SpokenHotpotQA...")
     ds = load_dataset("the-bird-F/HotpotQA_RGBzh_speech")
     ds.save_to_disk("benchmarks/datasets/spokenhotpotqa")
 
-
 def download_legalbench():
-    # Install datasets package and load LegalBench dataset
-    subprocess.run([
-        "pip", "install", "datasets"
-    ])
-    from datasets import load_dataset
+    print("Downloading LegalBench-RAG (contract_review)...")
     ds = load_dataset("lbox/lbox_open", "contract_review")
     ds.save_to_disk("benchmarks/datasets/legalbench")
-
 
 if __name__ == "__main__":
     download_hotpotqa()
