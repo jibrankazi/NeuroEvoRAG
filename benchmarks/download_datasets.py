@@ -6,11 +6,16 @@ from tqdm import tqdm
 
 def download_file(url, dest):
     os.makedirs(os.path.dirname(dest), exist_ok=True)
+    print(f"Downloading {os.path.basename(dest)}...")
     response = requests.get(url, stream=True)
     response.raise_for_status()
-    with open(dest, 'wb') as f:
-        for chunk in tqdm(response.iter_content(chunk_size=8192), desc=os.path.basename(dest)):
+    total_size = int(response.headers.get('content-length', 0))
+    with open(dest, 'wb') as f, tqdm(
+        total=total_size, unit='B', unit_scale=True, desc=os.path.basename(dest)
+    ) as bar:
+        for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
+            bar.update(len(chunk))
 
 def download_hotpotqa():
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
@@ -20,7 +25,7 @@ def download_hotpotqa():
     download_file(dev_url, "benchmarks/datasets/hotpotqa/dev.json")
 
 def download_mmqa():
-    print("MMQA requires cloning repo with images — using datasets library instead...")
+    print("Downloading MMQA via Hugging Face datasets...")
     ds = load_dataset("MMQA/MMQA", split="test")
     ds.save_to_disk("benchmarks/datasets/mmqa")
 
@@ -30,7 +35,7 @@ def download_spokenhotpotqa():
     ds.save_to_disk("benchmarks/datasets/spokenhotpotqa")
 
 def download_legalbench():
-    print("Downloading LegalBench-RAG (contract_review)...")
+    print("Downloading LegalBench (contract_review)...")
     ds = load_dataset("lbox/lbox_open", "contract_review")
     ds.save_to_disk("benchmarks/datasets/legalbench")
 
@@ -39,4 +44,4 @@ if __name__ == "__main__":
     download_mmqa()
     download_spokenhotpotqa()
     download_legalbench()
-    print("All datasets downloaded to benchmarks/datasets/")
+    print("\nAll datasets downloaded to benchmarks/datasets/")
