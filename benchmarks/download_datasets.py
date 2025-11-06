@@ -1,38 +1,48 @@
-# benchmarks/download_datasets.py
 import os
+from datasets import load_dataset
 import requests
 from tqdm import tqdm
 
+
 def download_file(url, dest):
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-    print(f"Downloading {os.path.basename(dest)}...")
     response = requests.get(url, stream=True)
     response.raise_for_status()
-    total_size = int(response.headers.get('content-length', 0))
-    with open(dest, 'wb') as f, tqdm(
-        total=total_size, unit='B', unit_scale=True, desc=os.path.basename(dest)
-    ) as bar:
-        for chunk in response.iter_content(chunk_size=8192):
+    with open(dest, 'wb') as f:
+        for chunk in tqdm(response.iter_content(chunk_size=8192), desc=os.path.basename(dest)):
             f.write(chunk)
-            bar.update(len(chunk))
+
 
 def download_hotpotqa():
+    print("Downloading HotpotQA dataset via datasets library...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
-    train_url = "https://huggingface.co/datasets/hotpotqa/resolve/main/hotpot_train_v1.1.json"
-    dev_url = "https://huggingface.co/datasets/hotpotqa/resolve/main/hotpot_dev_distractor_v1.json"
-    download_file(train_url, "benchmarks/datasets/hotpotqa/train.json")
-    download_file(dev_url, "benchmarks/datasets/hotpotqa/dev.json")
+    ds_train = load_dataset("hotpotqa", split="train")
+    ds_train.save_to_disk("benchmarks/datasets/hotpotqa/train")
+    ds_dev = load_dataset("hotpotqa", split="validation")
+    ds_dev.save_to_disk("benchmarks/datasets/hotpotqa/dev")
+
 
 def download_mmqa():
-    print("MMQA: Skipping (requires torch) — use HotpotQA for now.")
+    print("MMQA requires cloning repo with images — using datasets library instead...")
+    ds = load_dataset("MMQA/MMQA", split="test")
+    ds.save_to_disk("benchmarks/datasets/mmqa")
+
 
 def download_spokenhotpotqa():
-    print("SpokenHotpotQA: Skipping (requires torch) — use HotpotQA.")
+    print("Downloading SpokenHotpotQA...")
+    ds = load_dataset("the-bird-F/HotpotQA_RGBzh_speech")
+    ds.save_to_disk("benchmarks/datasets/spokenhotpotqa")
+
 
 def download_legalbench():
-    print("LegalBench: Skipping (requires torch) — use HotpotQA.")
+    print("Downloading LegalBench-RAG (contract_review)...")
+    ds = load_dataset("lbox/lbox_open", "contract_review")
+    ds.save_to_disk("benchmarks/datasets/legalbench")
+
 
 if __name__ == "__main__":
     download_hotpotqa()
-    print("\nHotpotQA downloaded. Other datasets skipped due to torch issue.")
-    print("You can now run evolution on HotpotQA!")
+    download_mmqa()
+    download_spokenhotpotqa()
+    download_legalbench()
+    print("All datasets downloaded to benchmarks/datasets/")
