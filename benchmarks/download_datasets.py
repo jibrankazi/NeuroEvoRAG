@@ -9,10 +9,10 @@ def download_file(url, dest):
     Downloads a file from a given URL to a destination path, 
     using the HF_TOKEN environment variable for authorization if available.
     
-    NOTE: This is retained for non-HuggingFace downloads, but load_dataset is 
-    preferred for HF datasets.
+    NOTE: This manual function is retained for non-HuggingFace downloads, 
+    but load_dataset is the required method for HotpotQA.
     """
-    print(f"Downloading {os.path.basename(dest)}...")
+    print(f"Executing manual download of {os.path.basename(dest)}...")
     os.makedirs(os.path.dirname(dest), exist_ok=True)
 
     # --- Token logic for manual requests ---
@@ -35,16 +35,28 @@ def download_file(url, dest):
 
 
 def download_hotpotqa():
-    # NOTICE: This print statement is unique. If you see this, the file is updated.
-    print("Downloading HotpotQA dataset via datasets library (uses saved HF token automatically)...")
+    """Download the HotpotQA dataset using the 'distractor' config (ChatGPT version)."""
+    print("Downloading HotpotQA (distractor split) via datasets library...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
+    # Get the token from the environment variable (set via 'export HF_TOKEN="hf_..."')
+    token = os.environ.get("HF_TOKEN")
     
-    # --- THIS CORRECTLY USES load_dataset TO AVOID THE 401 ERROR ---
-    ds_train = load_dataset("hotpotqa", split="train")
-    ds_train.save_to_disk("benchmarks/datasets/hotpotqa/train")
-    ds_dev = load_dataset("hotpotqa", split="validation")
-    ds_dev.save_to_disk("benchmarks/datasets/hotpotqa/dev")
-    # -----------------------------------------------------
+    # Explicitly pass the token using use_auth_token for robust authentication
+    train_ds = load_dataset(
+        "hotpotqa", # Simplified to standard name, though original was likely okay
+        "distractor",
+        split="train",
+        token=token # Updated parameter name to 'token' for newer datasets library versions
+    )
+    train_ds.save_to_disk("benchmarks/datasets/hotpotqa/train")
+    
+    dev_ds = load_dataset(
+        "hotpotqa", # Simplified to standard name
+        "distractor",
+        split="validation",
+        token=token
+    )
+    dev_ds.save_to_disk("benchmarks/datasets/hotpotqa/dev")
 
 
 def download_mmqa():
