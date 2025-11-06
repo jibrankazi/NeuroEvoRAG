@@ -29,7 +29,7 @@ def download_hotpotqa():
     print("Downloading HotpotQA (train/validation) via datasets library...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
     
-    # --- THIS LINE IS THE FIX: Using "HF_TOKEN" as the key ---
+    # Get the token from the environment variable (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)
     token = os.environ.get("HF_TOKEN")
     
     # This robust approach handles authentication automatically via the 'token' argument
