@@ -3,8 +3,8 @@ from datasets import load_dataset
 import requests
 from tqdm import tqdm
 
-# Note: The manual download_file function is kept but is NOT used for HotpotQA,
-# as the load_dataset function (below) is required for proper authentication.
+# The manual download_file function is retained for non-HF downloads, 
+# but load_dataset is the only required method for HotpotQA.
 def download_file(url, dest):
     """Placeholder for manual non-HF downloads."""
     print(f"Executing manual download of {os.path.basename(dest)}...")
@@ -29,8 +29,8 @@ def download_hotpotqa():
     print("Downloading HotpotQA (train/validation) via datasets library...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
     
-    # Get the token from the environment variable (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)
-    token = os.environ.get("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")
+    # --- THIS LINE IS THE FIX: Using "HF_TOKEN" as the key ---
+    token = os.environ.get("HF_TOKEN")
     
     # This robust approach handles authentication automatically via the 'token' argument
     train_ds = load_dataset(
