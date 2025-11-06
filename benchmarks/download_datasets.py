@@ -3,30 +3,19 @@ from datasets import load_dataset
 import requests
 from tqdm import tqdm
 
-
+# Note: The manual download_file function is kept but is NOT used for HotpotQA,
+# as the load_dataset function (below) is required for proper authentication.
 def download_file(url, dest):
-    """
-    Downloads a file from a given URL to a destination path, 
-    using the HF_TOKEN environment variable for authorization if available.
-    
-    NOTE: This manual function is retained for non-HuggingFace downloads, 
-    but load_dataset is the required method for HotpotQA.
-    """
+    """Placeholder for manual non-HF downloads."""
     print(f"Executing manual download of {os.path.basename(dest)}...")
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-
-    # --- Token logic for manual requests ---
+    
     headers = {}
     hf_token = os.environ.get("HF_TOKEN")
     if hf_token:
-        # Include the token in the Authorization header for manual requests
         headers["Authorization"] = f"Bearer {hf_token}"
-    # --------------------------------------
 
-    # Pass the headers to the requests.get call
     response = requests.get(url, headers=headers, stream=True)
-    
-    # This will raise an exception for 4xx or 5xx status codes
     response.raise_for_status()
 
     with open(dest, 'wb') as f:
@@ -35,23 +24,25 @@ def download_file(url, dest):
 
 
 def download_hotpotqa():
-    """Download the HotpotQA dataset using the 'distractor' config (ChatGPT version)."""
-    print("Downloading HotpotQA (distractor split) via datasets library...")
+    """Download the HotpotQA dataset using the robust datasets library method."""
+    print("--- SUCCESS: Using Fixed load_dataset logic for HotpotQA ---")
+    print("Downloading HotpotQA (train/validation) via datasets library...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
-    # Get the token from the environment variable (set via 'export HF_TOKEN="hf_..."')
+    
+    # Get the token from the environment variable (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)
     token = os.environ.get("HF_TOKEN")
     
-    # Explicitly pass the token using use_auth_token for robust authentication
+    # This robust approach handles authentication automatically via the 'token' argument
     train_ds = load_dataset(
-        "hotpotqa", # Simplified to standard name, though original was likely okay
+        "hotpotqa", 
         "distractor",
         split="train",
-        token=token # Updated parameter name to 'token' for newer datasets library versions
+        token=token
     )
     train_ds.save_to_disk("benchmarks/datasets/hotpotqa/train")
     
     dev_ds = load_dataset(
-        "hotpotqa", # Simplified to standard name
+        "hotpotqa", 
         "distractor",
         split="validation",
         token=token
@@ -60,7 +51,7 @@ def download_hotpotqa():
 
 
 def download_mmqa():
-    print("MMQA requires cloning repo with images — using datasets library instead...")
+    print("Downloading MMQA...")
     ds = load_dataset("MMQA/MMQA", split="test")
     ds.save_to_disk("benchmarks/datasets/mmqa")
 
