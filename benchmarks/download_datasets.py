@@ -35,6 +35,7 @@ def download_file(url, dest):
 
 
 def download_hotpotqa():
+    # NOTICE: This print statement is unique. If you see this, the file is updated.
     print("Downloading HotpotQA dataset via datasets library (uses saved HF token automatically)...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
     
