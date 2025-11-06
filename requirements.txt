@@ -1,0 +1,16 @@
+langgraph==0.2.4
+langchain==0.3.0
+llama-index==0.12.0
+neat-python==0.22
+pytorch-lightning==2.4.0
+deap==1.4.1
+groq
+openai
+anthropic
+milvus
+qdrant
+chromadb
+colpali
+whisper
+clip-vit
+wandb
