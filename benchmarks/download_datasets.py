@@ -1,6 +1,5 @@
 # benchmarks/download_datasets.py
 import os
-from datasets import load_dataset
 import requests
 from tqdm import tqdm
 
@@ -25,23 +24,15 @@ def download_hotpotqa():
     download_file(dev_url, "benchmarks/datasets/hotpotqa/dev.json")
 
 def download_mmqa():
-    print("Downloading MMQA via Hugging Face datasets...")
-    ds = load_dataset("MMQA/MMQA", split="test")
-    ds.save_to_disk("benchmarks/datasets/mmqa")
+    print("MMQA: Skipping (requires torch) — use HotpotQA for now.")
 
 def download_spokenhotpotqa():
-    print("Downloading SpokenHotpotQA...")
-    ds = load_dataset("the-bird-F/HotpotQA_RGBzh_speech")
-    ds.save_to_disk("benchmarks/datasets/spokenhotpotqa")
+    print("SpokenHotpotQA: Skipping (requires torch) — use HotpotQA.")
 
 def download_legalbench():
-    print("Downloading LegalBench (contract_review)...")
-    ds = load_dataset("lbox/lbox_open", "contract_review")
-    ds.save_to_disk("benchmarks/datasets/legalbench")
+    print("LegalBench: Skipping (requires torch) — use HotpotQA.")
 
 if __name__ == "__main__":
     download_hotpotqa()
-    download_mmqa()
-    download_spokenhotpotqa()
-    download_legalbench()
-    print("\nAll datasets downloaded to benchmarks/datasets/")
+    print("\nHotpotQA downloaded. Other datasets skipped due to torch issue.")
+    print("You can now run evolution on HotpotQA!")
