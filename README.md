@@ -1,6 +1,3 @@
-[![Nightly Datasets](https://img.shields.io/github/actions/workflow/status/jibrankazi/NeuroEvoRAG/datasets.yml?label=Nightly%20Datasets)](https://github.com/jibrankazi/NeuroEvoRAG/actions/workflows/datasets.yml)
-[![Evolve Smoke](https://img.shields.io/github/actions/workflow/status/jibrankazi/NeuroEvoRAG/evolve_smoke.yml?label=Evolve%20Smoke)](https://github.com/jibrankazi/NeuroEvoRAG/actions/workflows/evolve_smoke.yml)
-
 # NeuroEvoRAG 🚀
 
 **Neuro-Evolutionary Retrieval-Augmented Generation: A Self-Optimizing, Multimodal, Agentic RAG Framework that Evolves Its Own Architecture via Neuroevolution + Reinforcement Learning**
@@ -37,9 +34,18 @@ This repo is **100% runnable** on a single GPU (4090/A100) or CPU for small evol
    python -m venv neuroenv  # Or use conda
    source neuroenv/Scripts/activate  # Windows: neuroenv\Scripts\activate
    pip install -r requirements.txt
-📊 Results & Benchmarks
+   📊 Results & Benchmarks
 
 HotpotQA (Multi-hop QA): Baseline 72.4% → Evolved 91.8% faithfulness (RAGAS).
 Pareto Frontier: High accuracy + low latency/cost.
 Plots: See notebooks/02_evolve_10_generations.ipynb for live evals.
-GenerationFaithfulnessLatency (s)Cost ($)0 (Baseline)72.4%2.10.055091.8%1.260.03
+Generation,Faithfulness,Latency (s),Cost ($)
+0 (Baseline),72.4%,2.1,0.05
+50,91.8%,1.26,0.03
+🛠 Tech Stack
+
+Core: NEAT-Python, LangChain/LlamaIndex, PyTorch
+LLMs: GPT-4o, Llama-3.1, Mistral
+DBs: Milvus, Qdrant, Chroma
+Eval: RAGAS, DeepEval
+Runs on: Single 4090/A100; CPU for small evos.
