@@ -37,3 +37,9 @@ This repo is **100% runnable** on a single GPU (4090/A100) or CPU for small evol
    python -m venv neuroenv  # Or use conda
    source neuroenv/Scripts/activate  # Windows: neuroenv\Scripts\activate
    pip install -r requirements.txt
+📊 Results & Benchmarks
+
+HotpotQA (Multi-hop QA): Baseline 72.4% → Evolved 91.8% faithfulness (RAGAS).
+Pareto Frontier: High accuracy + low latency/cost.
+Plots: See notebooks/02_evolve_10_generations.ipynb for live evals.
+GenerationFaithfulnessLatency (s)Cost ($)0 (Baseline)72.4%2.10.055091.8%1.260.03
