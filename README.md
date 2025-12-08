@@ -98,7 +98,7 @@ NeuroEvoRAG/
 └── mutation_zoo/         # Mutation operators library (planned)
 ```
 
-## 🛠 Tech Stack
+## 🔧 Tech Stack
 
 - **Evolutionary Algorithm**: NEAT-Python
 - **RAG Frameworks**: LangChain, LlamaIndex
@@ -107,7 +107,7 @@ NeuroEvoRAG/
 - **Evaluation**: RAGAS metrics
 - **Orchestration**: LangGraph (planned)
 
-## 📖 Research Context
+## 📚 Research Context
 
 This project draws inspiration from:
 - **GraphRAG**: Knowledge graph-enhanced retrieval
