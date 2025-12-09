@@ -47,6 +47,10 @@ weight_mutate_power     = 0.5
 weight_mutate_rate      = 0.8
 weight_replace_rate     = 0.1
 
+
+[RAGGenome]
+# Inherits all settings from DefaultGenome
+# RAG-specific hyperparameters are handled in Python code
 [DefaultSpeciesSet]
 compatibility_threshold = 3.0
 
