@@ -1,6 +1,3 @@
-"""
-Tests for rag_pipelines/multimodal_retriever.py — MultimodalRetriever.
-"""
 from unittest.mock import MagicMock
 
 import pytest
@@ -9,7 +6,6 @@ from rag_pipelines.multimodal_retriever import MultimodalRetriever
 
 
 class TestMultimodalRetrieverNoRetrievers:
-    """Tests when no concrete retrievers are provided."""
 
     def test_text_modality_returns_empty(self):
         r = MultimodalRetriever()
@@ -29,7 +25,6 @@ class TestMultimodalRetrieverNoRetrievers:
 
 
 class TestMultimodalRetrieverWithMocks:
-    """Tests with mock retriever backends."""
 
     def test_text_delegates_to_text_retriever(self):
         text_r = MagicMock()

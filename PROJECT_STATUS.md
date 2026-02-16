@@ -1,165 +1,64 @@
-# Project Status & Roadmap
+# Project Status
 
-**Last Updated**: December 2024  
-**Status**: 🚧 Early Development / Research Prototype
+**Last updated**: December 2024
+**Status**: Early development / research prototype
 
 ## Overview
 
-NeuroEvoRAG is in the **prototype stage**. The core architecture and module structure are in place, but many components need implementation before the system can run end-to-end experiments.
+Core architecture and module structure are in place. Many components need work before full end-to-end experiments.
 
-## Implementation Status
+## Completed
 
-### ✅ Completed Components
+**Project structure**: module organization, dependencies, CI/CD, documentation.
 
-#### Project Structure
-- [x] Module organization (agents, evolution, rag_pipelines, benchmarks)
-- [x] Requirements.txt with necessary dependencies
-- [x] GitHub Actions CI/CD workflows
-- [x] Basic documentation and README
+**Evolution framework**: NEAT config, RAGGenome with hyperparameter encoding, reward model stubs, evolution loop.
 
-#### Evolution Framework
-- [x] NEAT configuration file
-- [x] Custom RAGGenome class with hyperparameter encoding
-- [x] Reward model structure (placeholder implementations)
-- [x] Main evolution loop structure
+**Agents**: RetrieverAgent, CriticAgent, SynthesizerAgent.
 
-#### Agents
-- [x] RetrieverAgent skeleton
-- [x] CriticAgent skeleton
-- [x] SynthesizerAgent skeleton
+**RAG components**: DynamicChunker (fixed-size), MultimodalRetriever (routing), AgenticGenerator (prompt assembly).
 
-#### RAG Components
-- [x] DynamicChunker (basic implementation)
-- [x] MultimodalRetriever (basic structure)
-- [x] AgenticGenerator (basic structure)
+**Benchmarks**: dataset download (HotpotQA, MMQA, SpokenHotpotQA, LegalBench), RAGAS evaluation suite.
 
-#### Benchmarks
-- [x] Dataset download script (HotpotQA, MMQA, SpokenHotpotQA, LegalBench)
-- [x] Evaluation suite structure
+**Testing**: 80 unit tests, runs without heavy dependencies.
 
-### 🚧 Partially Implemented
+## Partially implemented
 
-#### Evolution System
-- [ ] Genome-to-pipeline conversion logic
-- [ ] Actual fitness evaluation with real metrics
-- [ ] Population diversity calculation
-- [ ] Mutation operators beyond NEAT defaults
+- Fitness evaluation with real metrics
+- Population diversity calculation
+- Mutation operators beyond NEAT defaults
+- Semantic/propositional chunking
+- Embedding model integration
+- Vector DB connections (Milvus, Qdrant)
+- Latency measurement and cost tracking
 
-#### RAG Pipeline
-- [ ] Actual chunking strategies (semantic, propositional, etc.)
-- [ ] Embedding model integration
-- [ ] Vector database connections (Milvus, Qdrant, Chroma)
-- [ ] Retrieval strategy selection
-- [ ] LLM integration for generation
+## Not started
 
-#### Evaluation
-- [ ] RAGAS metric integration
-- [ ] Latency measurement
-- [ ] Cost tracking
-- [ ] Multi-dataset benchmarking
+- Image/audio retrieval and processing
+- Multimodal fusion
+- LangGraph integration
+- Self-RAG and CRAG
+- Knowledge graph integration
+- Streamlit dashboard
+- Evolution visualization
 
-### ❌ Not Started
+## Roadmap
 
-#### Multimodal Components
-- [ ] Image retrieval and processing
-- [ ] Audio retrieval and processing
-- [ ] Multimodal fusion strategies
+**Phase 1** (current): Get a basic RAG pipeline working end-to-end.
 
-#### Advanced Features
-- [ ] LangGraph integration for agentic workflows
-- [ ] Self-RAG and CRAG implementations
-- [ ] Knowledge graph integration
-- [ ] Prompt evolution
-- [ ] Mutation zoo for contrastive learning
+**Phase 2**: Evolve hyperparameters and verify fitness improvement.
 
-#### Tooling & Visualization
-- [ ] Streamlit dashboard
-- [ ] Evolution monitoring and visualization
-- [ ] Pareto frontier analysis
-- [ ] Results analysis notebooks
+**Phase 3**: Multiple evolvable components, multimodal, large-scale experiments.
 
-#### Testing & Validation
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Benchmark validation
-- [ ] Baseline comparisons
+**Phase 4**: Benchmarking, ablation studies, statistical significance.
 
-## Priority Roadmap
+## Known issues
 
-### Phase 1: Core Pipeline (Current)
-**Goal**: Get a basic RAG pipeline working end-to-end
+- RAGAS integration incomplete for live evaluation
+- No baseline comparison framework yet
+- Placeholder agent implementations
+- Limited error handling
+- No logging system
 
-1. ✅ Fix NEAT configuration duplicates
-2. ✅ Improve documentation and code comments
-3. ⏳ Implement basic chunking with real text
-4. ⏳ Add simple embedding (e.g., sentence-transformers)
-5. ⏳ Integrate with a vector store (start with ChromaDB)
-6. ⏳ Connect to an LLM API (OpenAI/Anthropic)
-7. ⏳ Run pipeline on one question successfully
+## Contributing
 
-### Phase 2: Basic Evolution (Next)
-**Goal**: Evolve one hyperparameter (e.g., chunk_size) successfully
-
-1. Implement genome-to-pipeline conversion
-2. Add actual RAGAS metrics evaluation
-3. Run 10-generation evolution on small dataset
-4. Verify fitness improves over generations
-5. Save and visualize best genomes
-
-### Phase 3: Full System (Future)
-**Goal**: Complete neuroevolution experiments
-
-1. Add multiple evolvable components
-2. Implement multimodal support
-3. Run large-scale experiments (100+ generations)
-4. Benchmark against baselines
-5. Create visualizations and analysis
-
-### Phase 4: Research & Publication (Long-term)
-**Goal**: Produce publishable results
-
-1. Comprehensive benchmarking
-2. Ablation studies
-3. Statistical significance testing
-4. Write research paper
-5. Open-source release with examples
-
-## Known Issues
-
-### Critical
-- [ ] No actual pipeline execution yet
-- [ ] RAGAS integration incomplete
-- [ ] Genome encoding needs proper design
-- [ ] No baseline for comparison
-
-### Important
-- [ ] Empty Jupyter notebooks
-- [ ] Placeholder agent implementations
-- [ ] No error handling in many places
-- [ ] Missing type hints in some modules
-
-### Minor
-- [ ] Documentation could be more detailed
-- [ ] No logging system
-- [ ] No configuration management
-- [ ] Test coverage is 0%
-
-## How to Contribute
-
-See `CONTRIBUTING.md` for guidelines on:
-- Setting up the development environment
-- Code standards and style
-- Testing requirements
-- Pull request process
-
-## Questions or Issues?
-
-Open an issue on GitHub with:
-- Your environment (OS, Python version)
-- What you're trying to do
-- What went wrong (with error messages)
-- What you've already tried
-
----
-
-**Remember**: This is a research project. It's okay that things are incomplete - that's the nature of exploration!
+See `CONTRIBUTING.md`.

@@ -1,9 +1,3 @@
-"""
-Tests for evolution/reward_model.py — placeholder fitness functions.
-
-These tests document the expected interface contracts even though
-the implementations are currently placeholders.
-"""
 import pytest
 
 from evolution.reward_model import measure_latency, estimate_cost, population_diversity
@@ -18,7 +12,6 @@ class TestMeasureLatency:
         assert measure_latency(None) == 1.0
 
     def test_accepts_any_pipeline(self):
-        # Should not raise regardless of input
         measure_latency("anything")
         measure_latency(42)
         measure_latency(object())

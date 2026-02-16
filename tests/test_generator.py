@@ -1,6 +1,3 @@
-"""
-Tests for rag_pipelines/agentic_generator.py — AgenticGenerator.
-"""
 from unittest.mock import MagicMock
 
 import pytest

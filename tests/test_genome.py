@@ -1,6 +1,3 @@
-"""
-Tests for evolution/genome.py — RAGGenome and genome_to_pipeline.
-"""
 import random
 from unittest.mock import MagicMock, patch
 
@@ -73,7 +70,6 @@ class TestRAGGenomeMutate:
                 assert genome.chunk_size in VALID_CHUNK_SIZES
 
     def test_top_k_stays_in_bounds(self):
-        """top_k must stay in [1, 15] even after repeated mutations."""
         config = MagicMock()
         with patch.object(RAGGenome.__bases__[0], "mutate"):
             genome = self._make_genome()
@@ -92,7 +88,6 @@ class TestRAGGenomeMutate:
                 assert 1 <= genome.top_k <= 15
 
     def test_temperature_stays_in_bounds(self):
-        """temperature must stay in [0.1, 1.5] even after repeated mutations."""
         config = MagicMock()
         with patch.object(RAGGenome.__bases__[0], "mutate"):
             genome = self._make_genome()
@@ -111,7 +106,6 @@ class TestRAGGenomeMutate:
                 assert 0.1 <= genome.temperature <= 1.5
 
     def test_mutation_sometimes_changes_values(self):
-        """With enough iterations, at least one parameter should change."""
         config = MagicMock()
         changed = False
         with patch.object(RAGGenome.__bases__[0], "mutate"):
@@ -128,7 +122,6 @@ class TestRAGGenomeMutate:
 
 class TestGenomeToPipeline:
     def _call_with_mock(self, genome):
-        """Call genome_to_pipeline with BasicRAGPipeline mocked out."""
         mock_cls = MagicMock()
         mock_instance = MagicMock()
         mock_cls.return_value = mock_instance

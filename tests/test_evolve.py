@@ -1,9 +1,3 @@
-"""
-Tests for evolution/evolve.py — evolution loop functions.
-
-These tests mock heavy dependencies (datasets, RAGAS, ML models)
-to test the orchestration logic in isolation.
-"""
 from unittest.mock import MagicMock, patch, mock_open
 import pytest
 
@@ -104,13 +98,10 @@ class TestEvalGenomes:
 
 class TestFitnessWeights:
     def test_weights_sum_to_one(self):
-        """The fitness weights in eval_genome should sum to 1.0."""
-        # These are the weights from evolve.py lines 63-68
         weights = [0.5, 0.3, 0.2]
         assert abs(sum(weights) - 1.0) < 1e-9
 
     def test_perfect_scores_yield_fitness_one(self):
-        """If all metrics are 1.0, fitness should be 1.0."""
         fitness = 1.0 * 0.5 + 1.0 * 0.3 + 1.0 * 0.2
         assert abs(fitness - 1.0) < 1e-9
 
@@ -124,13 +115,11 @@ class TestLoadEvalData:
     def test_populates_globals(self, mock_load):
         import evolution.evolve as mod
 
-        # Reset globals
         mod.EVAL_DATASET = None
         mod.EVAL_QUESTIONS = None
         mod.EVAL_ANSWERS = None
         mod.EVAL_CONTEXTS = None
 
-        # Build a fake dataset
         fake_items = [
             {
                 "question": "q1",
@@ -158,12 +147,10 @@ class TestLoadEvalData:
 
     @patch("evolution.evolve.load_dataset")
     def test_idempotent(self, mock_load):
-        """Calling load_eval_data twice should not reload."""
         import evolution.evolve as mod
 
         mod.EVAL_DATASET = "already loaded"
         mod.load_eval_data()
         mock_load.assert_not_called()
 
-        # Reset for other tests
         mod.EVAL_DATASET = None

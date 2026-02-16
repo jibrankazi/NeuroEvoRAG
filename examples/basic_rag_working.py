@@ -1,35 +1,24 @@
-"""
-A simple, working RAG pipeline without evolution.
-This serves as the baseline for comparison.
-"""
-
 from sentence_transformers import SentenceTransformer
 import chromadb
 from transformers import pipeline
 
 class BasicRAGPipeline:
     def __init__(self, chunk_size: int = 512) -> None:
-        """Initialize a basic Retrieval-Augmented Generation pipeline."""
-        # Use sentence-transformers for embeddings (free, no API key needed)
         self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
         self.chunk_size = chunk_size
 
-        # Use ChromaDB for vector storage (simple, local)
         self.client = chromadb.Client()
         self.collection = self.client.create_collection("rag_docs")
 
-        # Use a HuggingFace model via transformers pipeline (no API key needed)
-        self.llm = pipeline("text2text-generation", model="google/flan-t5-small", device=-1)  # -1 = CPU
+        self.llm = pipeline("text2text-generation", model="google/flan-t5-small", device=-1)
 
     def chunk_text(self, text: str) -> list[str]:
-        """Simple chunking by character count."""
         chunks: list[str] = []
         for i in range(0, len(text), self.chunk_size):
             chunks.append(text[i:i + self.chunk_size])
         return chunks
 
     def add_documents(self, documents: list[str]) -> int:
-        """Chunk and index documents."""
         all_chunks: list[dict[str, str]] = []
         for doc_id, doc in enumerate(documents):
             chunks = self.chunk_text(doc)
@@ -39,7 +28,6 @@ class BasicRAGPipeline:
                     'text': chunk
                 })
 
-        # Add to ChromaDB
         self.collection.add(
             documents=[c['text'] for c in all_chunks],
             ids=[c['id'] for c in all_chunks],
@@ -49,7 +37,6 @@ class BasicRAGPipeline:
         return len(all_chunks)
 
     def retrieve(self, query: str, top_k: int = 5) -> list[str]:
-        """Retrieve relevant chunks."""
         query_embedding = self.encoder.encode(query).tolist()
         results = self.collection.query(
             query_embeddings=[query_embedding],
@@ -58,7 +45,6 @@ class BasicRAGPipeline:
         return results['documents'][0]
 
     def generate(self, query: str, context_chunks: list[str]) -> str:
-        """Generate answer using retrieved context."""
         context = "\n\n".join(context_chunks)
 
         prompt = f"""Answer the question based on the context below.
@@ -74,7 +60,6 @@ Answer:"""
         return response[0]['generated_text']
 
     def query(self, question: str) -> dict:
-        """Full RAG pipeline: retrieve + generate."""
         context = self.retrieve(question, top_k=3)
         answer = self.generate(question, context)
         return {
@@ -84,9 +69,7 @@ Answer:"""
         }
 
 
-# Test it
 if __name__ == "__main__":
-    # Sample documents about AI
     docs = [
         "Artificial intelligence is the simulation of human intelligence by machines. It includes learning, reasoning, and self-correction.",
         "Machine learning is a subset of AI that enables systems to learn from data without explicit programming.",
