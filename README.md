@@ -26,16 +26,17 @@ NeuroEvoRAG explores using NEAT (NeuroEvolution of Augmenting Topologies) to aut
 - RAGAS evaluation metrics integration
 - Working baseline RAG pipeline (no API keys needed)
 - Test suite (80 unit tests, runs without heavy deps)
+- Evolution experiment (chunk=256, k=2 beat baseline by 10%)
 
 ## In progress
 
 - Multimodal retrieval implementations
 - Additional chunking strategies
 - Vector database integrations beyond ChromaDB
+- Larger-scale experiments with better LLMs
 
 ## Planned
 
-- Neuroevolution experiments with baseline comparisons
 - Dashboard for visualizing evolution progress
 - Comprehensive evaluation on multiple benchmarks
 
