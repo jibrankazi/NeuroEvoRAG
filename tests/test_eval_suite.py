@@ -1,8 +1,3 @@
-"""
-Tests for benchmarks/eval_suite.py — RAGAS evaluation wrapper.
-
-Mocks the RAGAS evaluate call to test the data preparation logic.
-"""
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -86,7 +81,6 @@ class TestEvaluatePipelineReal:
 
         evaluate_pipeline_real(pipeline, ["q"], ["gt"])
 
-        # Verify Dataset.from_dict was called
         mock_dataset_cls.from_dict.assert_called_once()
         data_dict = mock_dataset_cls.from_dict.call_args[0][0]
         assert "question" in data_dict

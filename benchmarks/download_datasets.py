@@ -2,16 +2,10 @@ import os
 from datasets import load_dataset
 
 def download_hotpotqa():
-    """
-    Download the HotpotQA dataset using the correct identifier and gated-access token.
-    Saves train and validation splits under benchmarks/datasets/hotpotqa.
-    """
     print("Downloading HotpotQA (distractor split) via datasets library...")
     os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
     hf_token = os.environ.get("HF_TOKEN")
 
-    # Use the correct dataset name (hotpotqa/hotpot_qa) with the 'distractor' config
-    # The use_auth_token parameter will pull your HF token from the environment
     train_ds = load_dataset(
         "hotpotqa/hotpot_qa",
         "distractor",

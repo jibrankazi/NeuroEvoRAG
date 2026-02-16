@@ -1,6 +1,3 @@
-"""
-Tests for rag_pipelines/dynamic_chunker.py — DynamicChunker.
-"""
 import pytest
 
 from rag_pipelines.dynamic_chunker import DynamicChunker
@@ -40,7 +37,6 @@ class TestDynamicChunker:
         assert result == ["abcd", "efg"]
 
     def test_no_data_loss(self):
-        """Concatenating all chunks should reproduce the original text."""
         chunker = DynamicChunker(max_chunk_size=7)
         text = "The quick brown fox jumps over the lazy dog."
         chunks = chunker.chunk(text)

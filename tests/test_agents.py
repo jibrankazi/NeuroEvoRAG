@@ -1,6 +1,3 @@
-"""
-Tests for agents/ — RetrieverAgent, CriticAgent, SynthesizerAgent.
-"""
 from unittest.mock import MagicMock
 
 import pytest
