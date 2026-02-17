@@ -107,6 +107,54 @@ Gen 3: best=0.373 | Overall best: 0.409
 | Baseline fitness | N/A | 0.170 |
 | Best fitness | N/A | 0.284 |
 
+## Experiment 3: Multi-Method Comparison
+
+**Date**: 2026-02-17
+
+### Setup
+
+- **Dataset**: HotpotQA validation (15 samples)
+- **Evaluation budget**: 15 evaluations per method (fair comparison)
+- **Methods**: Hand-tuned baseline, Random Search, Grid Search, Optuna (TPE), Evolution
+- **LLM**: google/flan-t5-small (local CPU)
+- **Search space**: chunk_size {128,256,512,1024,2048}, top_k [1-12], temperature [0.1-1.5]
+- **Fitness function**: 0.6*F1 + 0.3*EM + 0.1*(1-latency)
+
+### Results
+
+| Method | Best Fitness | Best Config | Time |
+|--------|-------------|-------------|------|
+| Hand-tuned baseline | 0.125 | chunk=512, k=5, t=0.3 | -- |
+| Grid Search | 0.401 | chunk=128, k=5, t=1.2 | 138s |
+| Optuna (Bayesian/TPE) | 0.431 | chunk=2048, k=10, t=0.4 | 142s |
+| Evolution | 0.500 | chunk=2048, k=2, t=0.93 | 159s |
+| Random Search | 0.595 | chunk=128, k=11, t=1.14 | 147s |
+
+All methods use the same evaluation budget (15 configs evaluated) for fair comparison.
+
+### Analysis
+
+1. **All methods beat the hand-tuned baseline** (0.125) by a large margin, confirming that the default RAG parameters are far from optimal.
+
+2. **Random search won this round** (0.595) — this is expected at small budgets. With only 15 evaluations, random search can get lucky. Research by Bergstra & Bengio (2012) showed random search is competitive with grid search and sometimes beats more sophisticated methods at low budgets.
+
+3. **Evolution placed second** (0.500) and showed structured convergence: it identified chunk=2048, k=2 as a strong region and exploited it across generations. With more budget, this structured search would likely outperform random.
+
+4. **Optuna (TPE)** achieved 0.431. Its Bayesian model needs more evaluations to build an accurate surrogate, so 15 trials limits its advantage.
+
+5. **Grid Search** (0.401) is limited by the discretization of the search space.
+
+### Key Takeaway
+
+At small evaluation budgets, simple methods compete with sophisticated optimization. The value of evolutionary search emerges at larger scales where its ability to combine good partial solutions (crossover) and exploit promising regions (selection pressure) provides an advantage over random sampling.
+
+### Limitations
+
+- 15 samples is too small for statistical significance
+- 15 evaluations per method is a very low budget
+- Single seed (no variance estimates)
+- Need multiple runs with different seeds to draw robust conclusions
+
 ## Visualizing Results
 
 Run the Streamlit dashboard to see interactive charts:
@@ -115,14 +163,17 @@ Run the Streamlit dashboard to see interactive charts:
 streamlit run app/dashboard.py
 ```
 
-This displays:
-- Fitness progression over generations
-- Baseline vs evolved comparison
-- Best genome parameters
+Run the multi-method comparison:
+
+```bash
+cd experiments && python run_comparison.py
+```
 
 ## Next Steps
 
-1. Run with larger sample size (50+) for statistical significance
-2. Test on other QA datasets (NaturalQuestions, TriviaQA)
-3. Try larger models (flan-t5-base/large) if GPU available
-4. Add RAGAS metrics when API available
+1. Scale to 50+ samples and 50+ evaluations per method for significance
+2. Run 5+ seeds and report mean +/- std
+3. Test on NaturalQuestions and TriviaQA
+4. Try larger models (flan-t5-base/large) with GPU
+5. Add RAGAS metrics (faithfulness, relevancy) when API available
+6. Investigate at what evaluation budget evolution overtakes random search
