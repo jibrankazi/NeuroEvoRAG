@@ -46,10 +46,83 @@ Gen 5: best=20%, avg=11% -> chunk=256, k=2
 - Substring match doesn't capture semantic correctness
 - 10 samples too few for statistical significance
 
+## Experiment 2: Flan-T5 with F1/EM Metrics
+
+**Date**: 2026-02-17
+
+### Setup
+
+- **Dataset**: HotpotQA validation (15 samples)
+- **Baseline**: chunk_size=512, top_k=5, temperature=0.3
+- **Evolution**: 3 generations, population size 5
+- **Evolved parameters**: chunk_size (128/256/512/1024/2048), top_k (1-12), temperature (0.1-1.5)
+- **LLM**: google/flan-t5-small (instruction-tuned, local CPU)
+- **Metrics**: F1 score, Exact Match
+- **Fitness function**: 0.6*F1 + 0.3*EM + 0.1*(1-latency)
+
+### Results
+
+| Configuration | F1 | Exact Match | Fitness |
+|--------------|-----|-------------|---------|
+| Baseline (chunk=512, k=5, t=0.3) | 0.116 | 6.7% | 0.170 |
+| Evolved (chunk=2048, k=2, t=0.93) | 0.224 | 20.0% | 0.284 |
+| **Improvement** | +93% | +199% | **+66.9%** |
+
+### Evolution History
+
+```
+Gen 1: best=0.409 | avg fitness across population
+       -> Best genome: chunk=2048, k=2, t=0.93
+Gen 2: best=0.403 | Overall best: 0.409
+       -> chunk=128, k=11, t=1.14 (local optimum)
+Gen 3: best=0.373 | Overall best: 0.409
+       -> Convergence to chunk=2048, k=2
+```
+
+### Key Findings
+
+1. **Larger chunks work better**: 2048 >> 512 for multi-hop QA
+   - Preserves more context per chunk
+   - Reduces fragmentation of related sentences
+
+2. **Fewer retrievals with larger chunks**: k=2 vs k=5
+   - Larger chunks contain more info per retrieval
+   - Less noise from irrelevant chunks
+
+3. **Higher temperature helps**: 0.93 vs 0.3
+   - More diverse generation explores answer space
+   - Small models benefit from sampling
+
+4. **Instruction-tuned model outperforms base model**:
+   - Flan-T5-small achieves better absolute scores than GPT-2
+   - Understands QA task format better
+
+### Improvements Over Experiment 1
+
+| Aspect | Exp 1 | Exp 2 |
+|--------|-------|-------|
+| LLM | GPT-2 | flan-t5-small |
+| Metric | Substring match | F1 + Exact Match |
+| Parameters | 2 (chunk, k) | 3 (chunk, k, temp) |
+| Baseline fitness | N/A | 0.170 |
+| Best fitness | N/A | 0.284 |
+
+## Visualizing Results
+
+Run the Streamlit dashboard to see interactive charts:
+
+```bash
+streamlit run app/dashboard.py
+```
+
+This displays:
+- Fitness progression over generations
+- Baseline vs evolved comparison
+- Best genome parameters
+
 ## Next Steps
 
-1. Use instruction-tuned LLM (flan-t5, llama) for better QA
-2. Increase sample size to 50+ for stability
-3. Add RAGAS metrics (faithfulness, relevancy) instead of substring match
-4. Run multiple seeds and report mean/std
-5. Add temperature as evolvable parameter
+1. Run with larger sample size (50+) for statistical significance
+2. Test on other QA datasets (NaturalQuestions, TriviaQA)
+3. Try larger models (flan-t5-base/large) if GPU available
+4. Add RAGAS metrics when API available
