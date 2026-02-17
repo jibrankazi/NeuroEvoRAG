@@ -10,9 +10,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from datasets import load_dataset
 
-NUM_SAMPLES = 30
-NUM_GENERATIONS = 20
-POPULATION_SIZE = 10
+NUM_SAMPLES = 15
+NUM_GENERATIONS = 3
+POPULATION_SIZE = 5
 
 CHUNK_SIZES = [128, 256, 512, 1024, 2048]
 TOP_K_RANGE = (1, 12)
