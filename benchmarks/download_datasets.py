@@ -1,5 +1,6 @@
 import os
 from datasets import load_dataset
+from huggingface_hub import snapshot_download
 
 
 def save_split(ds, path):
@@ -8,10 +9,6 @@ def save_split(ds, path):
 
 
 def hf_load_dataset(*args, **kwargs):
-    """
-    Load a dataset using the HF_TOKEN environment variable if it exists.
-    Works for private/gated datasets, and also for public datasets.
-    """
     hf_token = os.environ.get("HF_TOKEN")
     if hf_token:
         kwargs["token"] = hf_token
@@ -26,10 +23,24 @@ def download_hotpotqa():
 
 
 def download_mmqa():
-    print("Downloading MMQA...")
-    ds = hf_load_dataset("TableQAKit/MMQA")
-    for split in ds.keys():
-        save_split(ds[split], f"benchmarks/datasets/mmqa/{split}")
+    print("Downloading MMQA raw files...")
+    os.makedirs("benchmarks/datasets/mmqa", exist_ok=True)
+
+    snapshot_download(
+        repo_id="TableQAKit/MMQA",
+        repo_type="dataset",
+        token=os.environ.get("HF_TOKEN"),
+        local_dir="benchmarks/datasets/mmqa",
+        allow_patterns=[
+            "MMQA_train.jsonl.gz",
+            "MMQA_dev.jsonl.gz",
+            "MMQA_test.jsonl.gz",
+            "MMQA_texts.jsonl.gz",
+            "MMQA_tables.jsonl.gz",
+            "MMQA_images.jsonl.gz",
+            "mmqa.py",
+        ],
+    )
 
 
 def download_spokenhotpotqa():
