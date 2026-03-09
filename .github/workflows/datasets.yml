@@ -1,10 +1,6 @@
 name: Build datasets
 
 on:
-  workflow_dispatchyaml
-name: Build datasets
-
-on:
   workflow_dispatch:
 
 jobs:
