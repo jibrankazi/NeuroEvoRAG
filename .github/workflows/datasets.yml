@@ -1,13 +1,15 @@
 name: Build datasets
 
 on:
+  workflow_dispatchyaml
+name: Build datasets
+
+on:
   workflow_dispatch:
 
 jobs:
   build-datasets:
     runs-on: ubuntu-latest
-    env:
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,4 +26,6 @@ jobs:
           pip install datasets tqdm requests huggingface_hub
 
       - name: Download datasets
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python benchmarks/download_datasets.py
