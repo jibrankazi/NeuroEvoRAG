@@ -1,7 +1,7 @@
 import os
+import zipfile
 from datasets import load_dataset, Dataset, DatasetDict
 from huggingface_hub import snapshot_download
-
 
 BASE_DIR = "benchmarks/datasets"
 
@@ -61,9 +61,39 @@ def download_mmqa() -> None:
 
 
 def download_spokenhotpotqa() -> None:
-    print("Downloading SpokenHotpotQA...")
-    ds = hf_load_dataset("the-bird-F/HotpotQA_RGBzh_speech")
-    save_dataset_splits(ds, os.path.join(BASE_DIR, "spokenhotpotqa"))
+    print("Downloading SpokenHotpotQA raw files...")
+    out_dir = os.path.join(BASE_DIR, "spokenhotpotqa")
+    ensure_dir(out_dir)
+
+    snapshot_download(
+        repo_id="the-bird-F/HotpotQA_RGBzh_speech",
+        repo_type="dataset",
+        token=os.environ.get("HF_TOKEN"),
+        local_dir=out_dir,
+        allow_patterns=[
+            "*.zip",
+            "README.md",
+            "*.md",
+        ],
+    )
+
+    zip_files = [
+        os.path.join(out_dir, f)
+        for f in os.listdir(out_dir)
+        if f.lower().endswith(".zip")
+    ]
+
+    if not zip_files:
+        raise FileNotFoundError("No zip archive found for SpokenHotpotQA")
+
+    for zip_path in zip_files:
+        extract_dir = os.path.join(
+            out_dir,
+            os.path.splitext(os.path.basename(zip_path))[0]
+        )
+        ensure_dir(extract_dir)
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(extract_dir)
 
 
 def download_legalbench() -> None:
