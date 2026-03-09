@@ -2,17 +2,12 @@ name: Build datasets
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "benchmarks/**"
-      - ".github/workflows/datasets.yml"
-      - "requirements.txt"
 
 jobs:
   build-datasets:
     runs-on: ubuntu-latest
     env:
-      HF_TOKEN: ${{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}}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -22,13 +17,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -37,16 +25,3 @@ jobs:
 
       - name: Download datasets
         run: python benchmarks/download_datasets.py
-
-      - name: Summarize dataset sizes
-        run: |
-          echo "Datasets size report:" > dataset_report.txt
-          du -sh benchmarks/datasets/* >> dataset_report.txt || true
-          echo "" >> dataset_report.txt
-          echo "Timestamp: $(date -u)" >> dataset_report.txt
-
-      - name: Upload size report
-        uses: actions/upload-artifact@v4
-        with:
-          name: dataset_report
-          path: dataset_report.txt
