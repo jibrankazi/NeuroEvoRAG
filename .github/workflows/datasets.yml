@@ -12,7 +12,7 @@ jobs:
   build-datasets:
     runs-on: ubuntu-latest
     env:
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_TOKEN: ${{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}}
 
     steps:
       - uses: actions/checkout@v4
