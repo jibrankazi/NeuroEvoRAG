@@ -1,51 +1,51 @@
 import os
 from datasets import load_dataset
 
+
+def save_split(ds, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    ds.save_to_disk(path)
+
+
 def download_hotpotqa():
     """
-    Download the HotpotQA dataset using the correct identifier and gated-access token.
-    Saves train and validation splits under benchmarks/datasets/hotpotqa.
+    HotpotQA is public, so no token is needed here.
     """
-    print("Downloading HotpotQA (distractor split) via datasets library...")
-    os.makedirs("benchmarks/datasets/hotpotqa", exist_ok=True)
-    hf_token = os.environ.get("HF_TOKEN")
-
-    # Use the correct dataset name (hotpotqa/hotpot_qa) with the 'distractor' config
-    # The use_auth_token parameter will pull your HF token from the environment
-    train_ds = load_dataset(
-        "hotpotqa/hotpot_qa",
-        "distractor",
-        split="train",
-        use_auth_token=hf_token
-    )
-    train_ds.save_to_disk("benchmarks/datasets/hotpotqa/train")
-
-    dev_ds = load_dataset(
-        "hotpotqa/hotpot_qa",
-        "distractor",
-        split="validation",
-        use_auth_token=hf_token
-    )
-    dev_ds.save_to_disk("benchmarks/datasets/hotpotqa/dev")
-
+    print("Downloading HotpotQA (distractor split)...")
+    ds = load_dataset("hotpotqa/hotpot_qa", "distractor")
+    save_split(ds["train"], "benchmarks/datasets/hotpotqa/train")
+    save_split(ds["validation"], "benchmarks/datasets/hotpotqa/dev")
 
 
 def download_mmqa():
+    """
+    Use the public MMQA repo that currently exists on HF.
+    """
     print("Downloading MMQA...")
-    ds = load_dataset("MMQA/MMQA", split="test")
-    ds.save_to_disk("benchmarks/datasets/mmqa")
+    ds = load_dataset("TableQAKit/MMQA")
+    for split in ds.keys():
+        save_split(ds[split], f"benchmarks/datasets/mmqa/{split}")
 
 
 def download_spokenhotpotqa():
+    """
+    Dataset exists on HF, but may still need special handling depending on its file layout.
+    """
     print("Downloading SpokenHotpotQA...")
     ds = load_dataset("the-bird-F/HotpotQA_RGBzh_speech")
-    ds.save_to_disk("benchmarks/datasets/spokenhotpotqa")
+    for split in ds.keys():
+        save_split(ds[split], f"benchmarks/datasets/spokenhotpotqa/{split}")
 
 
 def download_legalbench():
-    print("Downloading LegalBench-RAG (contract_review)...")
-    ds = load_dataset("lbox/lbox_open", "contract_review")
-    ds.save_to_disk("benchmarks/datasets/legalbench")
+    """
+    'contract_review' is not a listed config for lbox/lbox_open.
+    Pick one verified config instead, or skip this dataset for now.
+    """
+    print("Downloading lbox_open summarization...")
+    ds = load_dataset("lbox/lbox_open", "summarization")
+    for split in ds.keys():
+        save_split(ds[split], f"benchmarks/datasets/legalbench/{split}")
 
 
 if __name__ == "__main__":
