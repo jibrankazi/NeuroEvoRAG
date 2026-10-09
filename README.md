@@ -1,147 +1,63 @@
-# Real-data retrieval benchmark (current)
+# NeuroEvoRAG — Executed Real-Data Neural Retrieval & Question Answering
 
-**This repository's validated retrieval experiment now uses real Stanford SQuAD 1.1 Wikipedia passages and crowdsourced question annotations**, not constructed sample passages. Source: https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json (CC BY-SA 4.0).
+NeuroEvoRAG now has an executable **no-API-key, local** document retrieval → pretrained neural answer extraction → original-source evidence → heldout QA evaluation path. It processes authentic published [Stanford SQuAD v1.1 validation questions and Wikipedia passages](https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json); it does **not** generate demonstration answers or silently substitute fabricated documents.
 
-```bash
-pip install requests scikit-learn numpy pytest
-python -m benchmarks.offline_retrieval --max-questions 80 --generations 3 --population-size 5 --output results/squad_retrieval.json
-```
+**Working neural source-to-evaluation pipeline:** [October 9, 2026 successful GitHub Actions run](https://github.com/jibrankazi/NeuroEvoRAG/actions/runs/37997618487). The workflow installed the reader, fetched the original public dataset, passed unit tests, scored genuine heldout questions with a pretrained DistilBERT QA model, validated the original cited evidence, and published downloadable per-question JSON and JSONL outputs.
 
-The experiment samples real questions deterministically, optimizes retrieval chunk length/top-k against a training subset, then reports held-out retrieval recall. **This is not proof of answer faithfulness, neural model training, RAGAS/NEAT convergence, or the numerical claims elsewhere in this repository.** The `examples/basic_rag_working.py` example also loads real SQuAD passages but requires configured model credentials and separate end-to-end testing.
+## Actually measured results (one small historical experiment)
 
-Unit tests use limited parser and metric fixtures for software correctness; empirical results must originate from the downloaded dataset. The old synthetic experiment has been replaced. The earlier documentation below is historical background.
+| Genuine original-data measurement | Executed result |
+| --- | ---: |
+| Distinct original SQuAD paragraphs indexed, including real distractors | **240** |
+| Real questions used for retriever n-gram selection | **20** |
+| Separate real questions, from different gold paragraphs, evaluated after selection | **16** |
+| Correct original paragraph included among top 3 for heldout questions | **16/16 (100%)** |
+| Exact answer match against crowd-annotated heldout reference | **11/16 (68.75%)** |
+| Mean SQuAD-style answer token F1 on heldout questions | **0.7092** |
+| Model answers traceable to a verbatim original retrieved paragraph substring | **16/16 (100%)** |
 
----
+The sample deliberately indexes each test question's gold paragraph among 240 candidate paragraphs; **this is a small, unusually favorable closed-corpus benchmark, not a claim of 100% retrieval in a real knowledge base.** The neural reader is pretrained on SQuAD-related material. Tests use different *evaluation passages* to choose n-grams, but this is **not an externally independent SQuAD generalization study**. Verbatim source support is not proof of factual correctness; the EM/F1 results measure answer quality separately.
 
-# NeuroEvoRAG — validated offline retrieval experiment
+The [GitHub Actions run](https://github.com/jibrankazi/NeuroEvoRAG/actions/runs/37997618487) contains an artifact named `real-squad-240doc-pretrained-qa-heldout-evidence`. It includes the original SQuAD response SHA-256, model checkpoint, recorded configurations, all 16 true questions/gold answers and observed neural predictions, retrieval IDs, evidence spans, and aggregate metrics.
 
-**Implemented and tested in the new CI:** a seeded, synthetic TF-IDF retrieval benchmark with actual evaluation and a simple evolutionary search over chunk sizes and retrieval depths. Unlike the previous smoke workflow, this runs code and checks measurable outputs.
+## Run it yourself — no external API key required
 
-```sh
-pip install numpy scikit-learn pytest
-python -m pytest -q tests/test_offline_retrieval.py
-python -m benchmarks.offline_retrieval
-```
+Python 3.11+ is recommended. Model weights are fetched from Hugging Face the first time you run, and **the model runs on your CPU**.
 
-**Not verified end-to-end:** production RAG generation, LLM integrations, HotpotQA results in the original README, RAGAS/NEAT performance, 80 claimed tests, and the README's optimizer-comparison figures. The standalone offline benchmark **does not establish** those claims. Additional workflows which download external datasets require independent setup and may fail.
-
-The original research concept and unverified historical figures are retained below for context only.
-
----
-
-# NeuroEvoRAG
-
-**Evolutionary Optimization of Retrieval-Augmented Generation Pipelines**
-
-## Overview
-
-NeuroEvoRAG empirically compares four hyperparameter optimization methods 
-for RAG pipelines on multi-hop question answering. Rather than hand-tuning 
-chunk sizes, retrieval depths, and temperatures, the system evaluates 
-evolutionary search, Bayesian optimization (Optuna/TPE), grid search, and 
-random search under equal evaluation budgets.
-
-## Key Finding
-
-All automated methods dramatically outperform hand-tuned defaults. At small 
-budgets (15 evaluations), random search is competitive with evolution — 
-consistent with Bergstra & Bengio (2012). Evolution shows structured 
-convergence and identifies promising regions across generations.
-
-## Results
-
-Evaluated on HotpotQA multi-hop QA with equal budget (15 evaluations):
-
-| Method | Best Fitness | vs Baseline |
-|---|---|---|
-| Hand-tuned baseline | 0.125 | -- |
-| Grid Search | 0.401 | +221% |
-| Optuna (TPE) | 0.431 | +245% |
-| Evolution | 0.500 | +300% |
-| Random Search | 0.595 | +376% |
-
-Fitness = 0.6 × F1 + 0.3 × Exact_Match + 0.1 × (1 - latency)
-
-## Method
-
-**Search Space:**
-- `chunk_size` ∈ {128, 256, 512, 1024, 2048}
-- `top_k` ∈ [1, 12]
-- `temperature` ∈ [0.1, 1.5]
-
-**Evolution:** Tournament selection, uniform crossover, Gaussian 
-mutation, elitism.
-
-**Two retrieval strategies emerged:**
-- Large chunks + few retrievals (chunk=2048, k=2)
-- Small chunks + many retrievals (chunk=128, k=11)
-
-## Stack
-
-| Component | Technology |
-|---|---|
-| LLM | flan-t5-small (local, no API key) |
-| Embeddings | sentence-transformers (all-MiniLM-L6-v2) |
-| Vector Store | ChromaDB |
-| Bayesian Opt | Optuna (TPE) |
-| Dataset | HotpotQA |
-| Dashboard | Streamlit |
-| Tests | pytest (80 tests) |
-
-## Quick Start
 ```bash
 git clone https://github.com/jibrankazi/NeuroEvoRAG.git
 cd NeuroEvoRAG
-pip install -r requirements.txt
-cd experiments && python run_comparison.py
-streamlit run app/dashboard.py
+python -m pip install requests numpy scikit-learn transformers==4.44.2 torch pytest
+python -m pytest -q tests/test_real_squad_qa.py tests/test_basic_rag_local.py
+python -m benchmarks.real_squad_qa --corpus-size 240 --train-questions 20 --heldout-questions 16 --seed 42
 ```
 
-## Structure
-```
-NeuroEvoRAG/
-├── evolution/          # Genome, evolution loop, fitness
-├── rag_pipelines/      # Chunking, retrieval, generation
-├── agents/             # Retriever, Critic, Synthesizer
-├── experiments/        # 4-method comparison + RESULTS.md
-├── benchmarks/         # RAGAS evaluation suite
-├── app/                # Streamlit dashboard
-├── paper/              # 4-page workshop paper (LaTeX, 16 citations)
-└── tests/              # 80 unit tests
+Alternatively, run the actual local application demo:
+
+```bash
+python -m examples.basic_rag_working
 ```
 
-## Limitations
+The replacement `BasicRAGPipeline` now uses actual local TF-IDF indexing and pretrained neural answer extraction. Its `query()` includes the verbatim supporting span and original indexed source ID. **It no longer needs `OPENAI_API_KEY` or a paid model account.** Missing original data, unsupported answers, or missing model access fail rather than fabricating answers.
 
-- Small scale: 15 samples, 15 evaluations per method, single seed
-- CPU-only inference (flan-t5-small)
-- Single dataset (HotpotQA)
-- Budget threshold where evolution beats random search not yet determined
+The benchmark writes:
+- `results/real_squad_qa/heldout_results.json` — actual publisher URL, raw-response fingerprint, true question and answer evaluation results and limitations.
+- `results/real_squad_qa/original_heldout_qa_evidence.jsonl` — evidence records for each of the 16 original heldout QA examples.
 
-## Future Work
+## Also runnable: genuine-source retrieval parameter experiment
 
-- Scale to 50+ samples with multiple seeds
-- GPU experiments with larger models
-- RAGAS faithfulness and relevancy metrics
-- Test on NaturalQuestions and TriviaQA
-
-## Paper
-
-A 4-page workshop paper with literature review, methodology, results, 
-and limitations is in `paper/main.tex` (16 citations). 
-Compile with LaTeX or upload to Overleaf.
-
-## Citation
-```
-@misc{kazi2026neuroevorag,
-  title={Evolutionary Optimization of RAG Pipelines},
-  author={Kazi, Jibran},
-  year={2026},
-  url={https://github.com/jibrankazi/NeuroEvoRAG}
-}
+```bash
+python -m benchmarks.offline_retrieval --max-questions 80 --generations 3 --population-size 5 --output results/squad_retrieval.json
 ```
 
-## License MIT
+This separate seeded experiment searches retrieval chunk length and top-k for real published SQuAD questions; it measures **retrieval recall only**, not model answers or full neuroevolution. CI for that experiment is in `.github/workflows/evolve_smoke.yml`. It must not be confused with full end-to-end answer generation.
 
----
-**Kazi Jibran Rafat Samie** | Toronto, Canada | 
-jibrankazi@gmail.com | github.com/jibrankazi
+## What remains unsupported
+
+The repo's original research proposal described multi-hop HotpotQA, NEAT, RAGAS faithfulness, multimodal image/audio models, and performance superiority of genetic search over Optuna/random search. **Those claimed comparisons and the original numerical HotpotQA table have not been verified as completed experiments.** The older skeleton modules may remain as designs, but are not evidence of measured results.
+
+Verified now: original document source → retriever → pretrained neural *extractive* QA → explicit source span → SQuAD token-level scoring → GitHub CI artifact.
+
+Still to build and evaluate: true generative LLM RAG with learned retriever training, research-grade multi-hop datasets, NEAT/Optuna equal-budget comparisons, repeated-seed confidence intervals, reliable document provenance in larger unseen corpora, and deployment monitoring. No paper or production-readiness claim is implied.
+
+This repository is an academic/portfolio prototype, not a validated production AI product.
