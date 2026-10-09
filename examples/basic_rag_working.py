@@ -138,18 +138,18 @@ Answer:"""
 
 def main() -> None:
     """Run a simple test of the basic RAG pipeline."""
-    # Sample documents about AI
-    docs = [
-        "Artificial intelligence is the simulation of human intelligence by machines. It includes learning, reasoning, and self-correction.",
-        "Machine learning is a subset of AI that enables systems to learn from data without explicit programming.",
-        "Deep learning uses neural networks with multiple layers to analyze data patterns.",
-    ]
+    # Load authentic SQuAD questions and Wikipedia context passages.
+    # Requires network access and an OpenAI API key for answer generation.
+    from benchmarks.offline_retrieval import load_squad
+    pairs = load_squad(limit=10, seed=42)
+    docs = list(dict.fromkeys(context for question, context in pairs))
+    question = pairs[0][0]
 
     pipeline = BasicRAGPipeline(chunk_size=200)
     num_chunks = pipeline.add_documents(docs)
     print(f"Added {num_chunks} chunks to the vector store.")
 
-    result = pipeline.query("What is machine learning?")
+    result = pipeline.query(question)
     print(f"Question: {result['question']}")
     print(f"Answer: {result['answer']}")
 

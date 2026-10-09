@@ -1,3 +1,18 @@
+# Real-data retrieval benchmark (current)
+
+**This repository's validated retrieval experiment now uses real Stanford SQuAD 1.1 Wikipedia passages and crowdsourced question annotations**, not constructed sample passages. Source: https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json (CC BY-SA 4.0).
+
+```bash
+pip install requests scikit-learn numpy pytest
+python -m benchmarks.offline_retrieval --max-questions 80 --generations 3 --population-size 5 --output results/squad_retrieval.json
+```
+
+The experiment samples real questions deterministically, optimizes retrieval chunk length/top-k against a training subset, then reports held-out retrieval recall. **This is not proof of answer faithfulness, neural model training, RAGAS/NEAT convergence, or the numerical claims elsewhere in this repository.** The `examples/basic_rag_working.py` example also loads real SQuAD passages but requires configured model credentials and separate end-to-end testing.
+
+Unit tests use limited parser and metric fixtures for software correctness; empirical results must originate from the downloaded dataset. The old synthetic experiment has been replaced. The earlier documentation below is historical background.
+
+---
+
 # NeuroEvoRAG — validated offline retrieval experiment
 
 **Implemented and tested in the new CI:** a seeded, synthetic TF-IDF retrieval benchmark with actual evaluation and a simple evolutionary search over chunk sizes and retrieval depths. Unlike the previous smoke workflow, this runs code and checks measurable outputs.

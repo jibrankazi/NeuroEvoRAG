@@ -1,16 +1,20 @@
-name: Offline retrieval optimization tests
+name: Real Stanford SQuAD retrieval validation
 on:
   push:
   pull_request:
   workflow_dispatch:
 jobs:
-  offline-retrieval:
+  real-retrieval:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install numpy scikit-learn pytest
+      - run: pip install numpy scikit-learn pytest requests
       - run: python -m pytest -q tests/test_offline_retrieval.py
-      - run: python -m benchmarks.offline_retrieval
+      - name: Run official SQuAD dev-data heldout evaluation
+        run: python -m benchmarks.offline_retrieval --max-questions 35 --generations 2 --population-size 3 --output /tmp/real_squad_results.json
+      - name: Verify provenance and heldout split
+        run: |
+          python -c "import json; x=json.load(open('/tmp/real_squad_results.json')); assert x['questions_heldout']>0 and x['source'].startswith('https://rajpurkar.github.io/')"
