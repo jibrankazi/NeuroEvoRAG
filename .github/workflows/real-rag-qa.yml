@@ -1,0 +1,72 @@
+name: Real Stanford SQuAD retrieval-to-neural-extractive-answer benchmark
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "benchmarks/real_squad_qa.py"
+      - "tests/test_real_squad_qa.py"
+      - ".github/workflows/real-rag-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-published-question-answering:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install genuine published-dataset and pretrained-neural-reader dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install requests numpy scikit-learn transformers==4.44.2 torch pytest
+      - name: Verify software logic, safe evidence citations and data-split invariants
+        run: python -m pytest -q tests/test_real_squad_qa.py
+      - name: Retrieve official Stanford SQuAD questions, genuine distracting paragraphs and pretrained neural reader
+        run: |
+          python -u -m benchmarks.real_squad_qa --corpus-size 240 --train-questions 20 --heldout-questions 16 --seed 42
+      - name: Verify complete original source, heldout answer model and evidence files
+        run: |
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+          root=Path("results/real_squad_qa")
+          output=json.loads((root/"heldout_results.json").read_text())
+          assert output["official_source_url"] == "https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json"
+          assert len(output["official_source_sha256_raw_response"]) == 64
+          assert output["published_squad_version"] == "1.1"
+          assert output["pretrained_reader"] == "distilbert/distilbert-base-cased-distilled-squad"
+          assert output["genuine_distinct_corpus_paragraphs"] == 240
+          assert output["selection_training_question_count"] == 20
+          assert output["heldout_question_count"] == 16
+          assert output["heldout_not_used_for_retriever_selection"]
+          assert output["original_reference_passages_disjoint_across_train_and_heldout"]
+          scores=output["retrieved_qa_holdout"]
+          assert scores["evaluated_questions"] == 16
+          for key in ("gold_paragraph_recall_at_3","retrieved_qa_exact_match",
+                      "retrieved_qa_mean_token_f1","source_substring_verified_rate",
+                      "baseline_unigram_gold_paragraph_recall_at_3"):
+              assert math.isfinite(scores[key]) and 0 <= scores[key] <= 1
+          assert scores["gold_paragraph_retrieved_at_3"] > 0
+          assert scores["source_substring_verified_rate"] == 1.0
+          records=output["question_results"]
+          assert len(records) == 16
+          assert len({r["source_question_id"] for r in records}) == 16
+          assert all(r["answer_evidence_supported"] for r in records)
+          assert all(r["cited_evidence_original_paragraph_index"] in r["retrieved_paragraph_indices"] for r in records)
+          assert all(r["cited_original_source_span"] == r["model_answer"] and r["model_answer"] for r in records)
+          assert all(r["original_gold_answers"] and r["question"] for r in records)
+          lines=(root/"original_heldout_qa_evidence.jsonl").read_text().splitlines()
+          assert len(lines) == 16 and all(json.loads(line) for line in lines)
+          print("VERIFIED: published source SHA, 240 real passage corpus, 20 distinct training queries, 16 scored untouched questions, pretrained QA and 16 cited original spans")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: real-squad-240doc-pretrained-qa-heldout-evidence
+          path: results/real_squad_qa/
+          if-no-files-found: error
