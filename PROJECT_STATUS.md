@@ -1,3 +1,11 @@
+# Current status — October 2026
+
+A **real, reproducible offline retrieval-only optimization baseline** now exists in `benchmarks/offline_retrieval.py`. It uses a tiny **synthetic** corpus and tests/compares retrieval configurations with deterministic seeds. The GitHub CI executes the optimizer and tests rather than printing a pretend success.
+
+Still incomplete/unverified: full LLM-based RAG, NEAT experiments, agent/LLM integration, multimodal retrieval, real-dataset evaluation and the numerical research claims shown in the README. The older roadmap below is historical and does not supersede this statement.
+
+---
+
 # Project Status & Roadmap
 
 **Last Updated**: December 2024  
