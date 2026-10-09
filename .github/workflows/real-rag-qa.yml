@@ -7,6 +7,8 @@ on:
       - "benchmarks/real_squad_qa.py"
       - "tests/test_real_squad_qa.py"
       - "tests/test_basic_rag_local.py"
+      - "tests/test_evidence_generator.py"
+      - "rag_pipelines/agentic_generator.py"
       - "examples/basic_rag_working.py"
       - ".github/workflows/real-rag-qa.yml"
   workflow_dispatch:
@@ -28,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests numpy scikit-learn transformers==4.44.2 torch pytest
       - name: Verify software logic, safe evidence citations and data-split invariants
-        run: python -m pytest -q tests/test_real_squad_qa.py tests/test_basic_rag_local.py
+        run: python -m pytest -q tests/test_real_squad_qa.py tests/test_basic_rag_local.py tests/test_evidence_generator.py
       - name: Retrieve official Stanford SQuAD questions, genuine distracting paragraphs and pretrained neural reader
         run: |
           python -u -m benchmarks.real_squad_qa --corpus-size 240 --train-questions 20 --heldout-questions 16 --seed 42
