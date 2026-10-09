@@ -1,3 +1,19 @@
+# NeuroEvoRAG — validated offline retrieval experiment
+
+**Implemented and tested in the new CI:** a seeded, synthetic TF-IDF retrieval benchmark with actual evaluation and a simple evolutionary search over chunk sizes and retrieval depths. Unlike the previous smoke workflow, this runs code and checks measurable outputs.
+
+```sh
+pip install numpy scikit-learn pytest
+python -m pytest -q tests/test_offline_retrieval.py
+python -m benchmarks.offline_retrieval
+```
+
+**Not verified end-to-end:** production RAG generation, LLM integrations, HotpotQA results in the original README, RAGAS/NEAT performance, 80 claimed tests, and the README's optimizer-comparison figures. The standalone offline benchmark **does not establish** those claims. Additional workflows which download external datasets require independent setup and may fail.
+
+The original research concept and unverified historical figures are retained below for context only.
+
+---
+
 # NeuroEvoRAG
 
 **Evolutionary Optimization of Retrieval-Augmented Generation Pipelines**
