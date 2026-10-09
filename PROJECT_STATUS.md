@@ -1,173 +1,30 @@
-# Current status — October 2026
+# NeuroEvoRAG — verified implementation status (October 9, 2026)
 
-A **real, reproducible offline retrieval-only optimization baseline** now exists in `benchmarks/offline_retrieval.py`. It uses a tiny **synthetic** corpus and tests/compares retrieval configurations with deterministic seeds. The GitHub CI executes the optimizer and tests rather than printing a pretend success.
+## Tested original-data functionality
 
-Still incomplete/unverified: full LLM-based RAG, NEAT experiments, agent/LLM integration, multimodal retrieval, real-dataset evaluation and the numerical research claims shown in the README. The older roadmap below is historical and does not supersede this statement.
+- **Executed published SQuAD source ingestion**: downloads Stanford SQuAD dev 1.1 JSON, validates the genuine original Wikipedia paragraphs, original crowdsourced questions and source response checksum. No generated data is substituted.
+- **Executed original document retrieval**: indexes 240 distinct actual Wikipedia paragraphs with TF-IDF (including many real distractors), selects unigram/bigram settings using **20 original questions** whose gold paragraphs do not overlap the heldout questions' gold paragraphs. Baseline and chosen configurations are measured.
+- **Executed pretrained neural answer extraction**: `distilbert/distilbert-base-cased-distilled-squad` produces answers from actual top-three retrieved paragraphs on CPU, without an OpenAI API key.
+- **Verified original-source citations**: each neural answer is a verbatim substring of a cited retrieved original paragraph, with original question ID, source title and document index preserved.
+- **Measured real labelled QA performance**: **16 heldout authentic SQuAD questions; 16/16 original paragraphs retrieved top 3; 11/16 exact answer match (68.75%); mean token F1 0.7092; 16/16 verbatim cited spans**. This is a favorable small closed-corpus experiment, not a statistical estimate of full SQuAD/general-domain performance.
+- **End-to-end GitHub workflow and artifact**: [successful observed-data run](https://github.com/jibrankazi/NeuroEvoRAG/actions/runs/37997618487), `real-squad-240doc-pretrained-qa-heldout-evidence`.
+- **Local no-token demo**: `python -m examples.basic_rag_working` now uses local document indexing and pretrained extractive reader, not the earlier `OPENAI_API_KEY`-dependent demonstration.
+- **Separate lightweight genuine-source retrieval-only search**: `benchmarks/offline_retrieval.py` works with SQuAD and simple seeded parameter search. It does not establish full NEAT evolution.
 
----
+## Still unverified or not implemented
 
-# Project Status & Roadmap
+- **Real NEAT neuroevolution of a trained RAG system**, neural retriever training, and comparable multi-seed Optuna/grid/random benchmarks. Placeholder evolution classes are not results.
+- **Multi-hop HotpotQA question-answering benchmarks**, RAGAS faithfulness scores, end-to-end generative LLM evaluation, multimodal image/audio retrieval, and calibrated abstention under domain shift.
+- **Real-world production readiness**: access control, API deployment, attribution audits at scale, adversarial evaluation, telemetry, operational SLAs and cost budgets.
+- **Independent statistical validity**: 16 questions is far too small for precise population-level accuracy inference; the pretrained reader was trained on SQuAD-related material, and gold contexts are explicitly included in the experimental index.
 
-**Last Updated**: December 2024  
-**Status**: 🚧 Early Development / Research Prototype
+## Reproduction
 
-## Overview
+```bash
+python -m pip install requests numpy scikit-learn transformers==4.44.2 torch pytest
+python -m pytest -q tests/test_real_squad_qa.py tests/test_basic_rag_local.py
+python -m benchmarks.real_squad_qa --corpus-size 240 --train-questions 20 --heldout-questions 16 --seed 42
+python -m examples.basic_rag_working
+```
 
-NeuroEvoRAG is in the **prototype stage**. The core architecture and module structure are in place, but many components need implementation before the system can run end-to-end experiments.
-
-## Implementation Status
-
-### ✅ Completed Components
-
-#### Project Structure
-- [x] Module organization (agents, evolution, rag_pipelines, benchmarks)
-- [x] Requirements.txt with necessary dependencies
-- [x] GitHub Actions CI/CD workflows
-- [x] Basic documentation and README
-
-#### Evolution Framework
-- [x] NEAT configuration file
-- [x] Custom RAGGenome class with hyperparameter encoding
-- [x] Reward model structure (placeholder implementations)
-- [x] Main evolution loop structure
-
-#### Agents
-- [x] RetrieverAgent skeleton
-- [x] CriticAgent skeleton
-- [x] SynthesizerAgent skeleton
-
-#### RAG Components
-- [x] DynamicChunker (basic implementation)
-- [x] MultimodalRetriever (basic structure)
-- [x] AgenticGenerator (basic structure)
-
-#### Benchmarks
-- [x] Dataset download script (HotpotQA, MMQA, SpokenHotpotQA, LegalBench)
-- [x] Evaluation suite structure
-
-### 🚧 Partially Implemented
-
-#### Evolution System
-- [ ] Genome-to-pipeline conversion logic
-- [ ] Actual fitness evaluation with real metrics
-- [ ] Population diversity calculation
-- [ ] Mutation operators beyond NEAT defaults
-
-#### RAG Pipeline
-- [ ] Actual chunking strategies (semantic, propositional, etc.)
-- [ ] Embedding model integration
-- [ ] Vector database connections (Milvus, Qdrant, Chroma)
-- [ ] Retrieval strategy selection
-- [ ] LLM integration for generation
-
-#### Evaluation
-- [ ] RAGAS metric integration
-- [ ] Latency measurement
-- [ ] Cost tracking
-- [ ] Multi-dataset benchmarking
-
-### ❌ Not Started
-
-#### Multimodal Components
-- [ ] Image retrieval and processing
-- [ ] Audio retrieval and processing
-- [ ] Multimodal fusion strategies
-
-#### Advanced Features
-- [ ] LangGraph integration for agentic workflows
-- [ ] Self-RAG and CRAG implementations
-- [ ] Knowledge graph integration
-- [ ] Prompt evolution
-- [ ] Mutation zoo for contrastive learning
-
-#### Tooling & Visualization
-- [ ] Streamlit dashboard
-- [ ] Evolution monitoring and visualization
-- [ ] Pareto frontier analysis
-- [ ] Results analysis notebooks
-
-#### Testing & Validation
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Benchmark validation
-- [ ] Baseline comparisons
-
-## Priority Roadmap
-
-### Phase 1: Core Pipeline (Current)
-**Goal**: Get a basic RAG pipeline working end-to-end
-
-1. ✅ Fix NEAT configuration duplicates
-2. ✅ Improve documentation and code comments
-3. ⏳ Implement basic chunking with real text
-4. ⏳ Add simple embedding (e.g., sentence-transformers)
-5. ⏳ Integrate with a vector store (start with ChromaDB)
-6. ⏳ Connect to an LLM API (OpenAI/Anthropic)
-7. ⏳ Run pipeline on one question successfully
-
-### Phase 2: Basic Evolution (Next)
-**Goal**: Evolve one hyperparameter (e.g., chunk_size) successfully
-
-1. Implement genome-to-pipeline conversion
-2. Add actual RAGAS metrics evaluation
-3. Run 10-generation evolution on small dataset
-4. Verify fitness improves over generations
-5. Save and visualize best genomes
-
-### Phase 3: Full System (Future)
-**Goal**: Complete neuroevolution experiments
-
-1. Add multiple evolvable components
-2. Implement multimodal support
-3. Run large-scale experiments (100+ generations)
-4. Benchmark against baselines
-5. Create visualizations and analysis
-
-### Phase 4: Research & Publication (Long-term)
-**Goal**: Produce publishable results
-
-1. Comprehensive benchmarking
-2. Ablation studies
-3. Statistical significance testing
-4. Write research paper
-5. Open-source release with examples
-
-## Known Issues
-
-### Critical
-- [ ] No actual pipeline execution yet
-- [ ] RAGAS integration incomplete
-- [ ] Genome encoding needs proper design
-- [ ] No baseline for comparison
-
-### Important
-- [ ] Empty Jupyter notebooks
-- [ ] Placeholder agent implementations
-- [ ] No error handling in many places
-- [ ] Missing type hints in some modules
-
-### Minor
-- [ ] Documentation could be more detailed
-- [ ] No logging system
-- [ ] No configuration management
-- [ ] Test coverage is 0%
-
-## How to Contribute
-
-See `CONTRIBUTING.md` for guidelines on:
-- Setting up the development environment
-- Code standards and style
-- Testing requirements
-- Pull request process
-
-## Questions or Issues?
-
-Open an issue on GitHub with:
-- Your environment (OS, Python version)
-- What you're trying to do
-- What went wrong (with error messages)
-- What you've already tried
-
----
-
-**Remember**: This is a research project. It's okay that things are incomplete - that's the nature of exploration!
+Review [the primary README](README.md) for the explanation of the heldout design, source/answer scope, files and GitHub verification. The old aspirational README figures have been removed because their experimental basis was not demonstrated. This project is an implemented research baseline with known limitations, **not** a production AI service.
