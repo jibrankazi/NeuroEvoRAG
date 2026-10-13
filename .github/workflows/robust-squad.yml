@@ -1,0 +1,83 @@
+name: Repeated-seed original SQuAD large-corpus retrieval and neural QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "benchmarks/robust_squad_multiseed.py"
+      - "benchmarks/real_squad_qa.py"
+      - "tests/test_robust_squad_multiseed.py"
+      - ".github/workflows/robust-squad.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-backed-neural-robustness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install original-document retrieval and pretrained neural reader dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install requests numpy scikit-learn transformers==4.44.2 torch pytest
+      - name: Regression tests (software fixtures only; not benchmark data)
+        run: python -m pytest -q tests/test_robust_squad_multiseed.py tests/test_real_squad_qa.py
+      - name: Index real published SQuAD paragraphs and score 3 fixed original-data seeds
+        run: |
+          python -u -m benchmarks.robust_squad_multiseed \
+            --seeds 17 42 91 --corpus-size 1200 \
+            --train-questions 60 --heldout-questions 120 --reader-count 24
+      - name: Independently verify original SQuAD receipt, three blind holdouts, BM25 and neural answer counts
+        run: |
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+          root=Path("results/squad_multiseed")
+          r=json.loads((root/"benchmark.json").read_text())
+          assert r["official_url"]=="https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json"
+          assert len(r["official_source_sha256"])==64
+          assert r["seed_protocol_fixed_before_evaluation"] == [17,42,91]
+          assert r["original_published_paragraphs_available"] >= 1500
+          assert r["indexed_genuine_paragraphs_per_seed"] == 1200
+          assert r["total_retrieval_questions_scored"] == 360
+          assert r["total_neural_questions_scored"] == 72
+          assert r["train_test_gold_paragraphs_disjoint_within_seed"]
+          assert r["original_gold_passages_present_in_retriever_corpus_by_design"]
+          assert not r["new_neural_model_training_performed"]
+          assert not r["NEAT_or_evolutionary_learning_performed"]
+          assert not r["production_generalization_established"]
+          cases=[json.loads(line) for line in (root/"retrieval_cases.jsonl").read_text().splitlines()]
+          neural=[json.loads(line) for line in (root/"neural_qa_cases.jsonl").read_text().splitlines()]
+          assert len(cases)==360 and len(neural)==72
+          assert len({(x["seed"],x["original_question_id"]) for x in cases})==360
+          assert len({(x["seed"],x["original_question_id"]) for x in neural})==72
+          for seed in [17,42,91]:
+              run=[x for x in r["per_seed_runs"] if x["seed"]==seed]
+              assert len(run)==1
+              assert run[0]["train_test_gold_paragraph_overlap"]==0
+              assert run[0]["distinct_heldout_gold_paragraphs"]==120
+          for method in ("unigram","selected_tfidf","bm25"):
+              scores=r["aggregate_retrieval_scores"][method]
+              assert 0 <= scores["recall_at_1"] <= scores["recall_at_3"] <= scores["recall_at_5"] <= 1
+              for k in (1,3,5):
+                  independent=sum(int(x["gold_paragraph_index"] in x["retrieved_indices_by_method"][method][:k]) for x in cases)/360
+                  assert math.isclose(independent,scores[f"recall_at_{k}"],abs_tol=1e-12)
+          assert r["neural_qa_scores"]["questions"]==72
+          assert r["neural_qa_scores"]["evidence_substring_count"]==72
+          assert sum(int(x["exact_match"]) for x in neural)==r["neural_qa_scores"]["exact_match_count"]
+          assert all(x["source_span_verified"] for x in neural)
+          print("VERIFIED original SQuAD: 1200 source paragraphs/seed, 360 blind retrieval questions, 72 pretrained extractive QA, 3 baselines/selection variants and original evidence.")
+          print("Retrieval scores:", r["aggregate_retrieval_scores"])
+          print("Pretrained neural scores:",r["neural_qa_scores"])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: authentic-squad-3-seed-1200doc-360retrieval-72neuralqa
+          path: results/squad_multiseed/
+          if-no-files-found: error
