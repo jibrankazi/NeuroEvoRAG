@@ -45,6 +45,40 @@ jobs:
           assert html.status_code == 200 and "NeuroEvoRAG" in html.text
           print("Actual HTTP health and homepage healthy")
           PY
+      - name: Real published SQuAD passage upload to actual HTTP API and pretrained reader inference
+        run: |
+          python - <<'PY'
+          import requests
+          from benchmarks.real_squad_qa import download_actual_dataset
+          base="http://127.0.0.1:8000"
+          originals, source_sha = download_actual_dataset()
+          example = originals[0]
+          qa = example["qa"][0]
+          workspace = requests.post(base+"/api/workspaces", timeout=15)
+          workspace.raise_for_status()
+          token = workspace.json()["workspace_id"]
+          headers={"X-Workspace-ID":token}
+          submitted=requests.post(base+"/api/documents",
+              files={"file":("original_squad_source.txt", example["context"].encode("utf-8"), "text/plain")},
+              headers=headers, timeout=20)
+          submitted.raise_for_status()
+          scored=requests.post(base+"/api/ask",
+              json={"question":qa["question"],"top_k":3},
+              headers=headers,timeout=300)
+          scored.raise_for_status()
+          out=scored.json()
+          assert not out["abstained"],out
+          cite=out["citations"][0]
+          assert cite["filename"]=="original_squad_source.txt"
+          assert example["context"][cite["start_char"]:cite["end_char"]]==out["answer"]
+          assert out["answer"]==cite["quoted_span"]
+          assert out["extractive_not_generative"]
+          print("REAL API FULL LIFECYCLE",{"source_sha256":source_sha,
+              "published_squad_question":qa["question"],
+              "real_pretrained_model_answer":out["answer"],
+              "published_reference_answers":qa["gold_answers"],
+              "span_verified":True})
+          PY
       - name: Capture actual served interface screenshot (not a generated mockup)
         run: |
           mkdir -p docs/screenshots
