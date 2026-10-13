@@ -1,5 +1,10 @@
 # NeuroEvoRAG — Executed Real-Data Neural Retrieval & Question Answering
 
+## Local application: upload documents, ask questions, inspect citations
+
+A separate [**working local browser application and HTTP API**](docs/LOCAL_APP.md) accepts bounded UTF-8 text/Markdown and searchable PDF uploads, creates isolated temporary workspaces, indexes original passages with TF-IDF, runs a locally loaded pretrained extractive DistilBERT reader, and verifies citations using exact source offsets. It includes document deletion, abstention, Docker packaging, local health checks and real HTTP contract tests. See its [application CI and browser screenshot artifact](https://github.com/jibrankazi/NeuroEvoRAG/actions/workflows/local-document-app.yml). This is **local-only research software**: no real hosting, authentication, permanent storage, private-document guarantee, new neural training or production deployment is claimed.
+
+
 NeuroEvoRAG now has an executable **no-API-key, local** document retrieval → pretrained neural answer extraction → original-source evidence → heldout QA evaluation path. It processes authentic published [Stanford SQuAD v1.1 validation questions and Wikipedia passages](https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json); it does **not** generate demonstration answers or silently substitute fabricated documents.
 
 **Working neural source-to-evaluation pipeline:** [October 9, 2026 successful GitHub Actions run](https://github.com/jibrankazi/NeuroEvoRAG/actions/runs/37997618487). The workflow installed the reader, fetched the original public dataset, passed unit tests, scored genuine heldout questions with a pretrained DistilBERT QA model, validated the original cited evidence, and published downloadable per-question JSON and JSONL outputs.
