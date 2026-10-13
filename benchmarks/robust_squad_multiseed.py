@@ -57,7 +57,7 @@ class BM25Corpus:
         if top_k < 1:
             raise ValueError("top_k must be >=1")
         query = self.vectorizer.transform([question])
-        scores = np.asarray(self.matrix @ query.T).reshape(-1)
+        scores = (self.matrix @ query.T).toarray().ravel()
         indices = np.argsort(-scores, kind="stable")[:min(top_k, len(scores))]
         return [
             {"document_id": int(i),
