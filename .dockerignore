@@ -1,0 +1,12 @@
+**/__pycache__
+.git
+.github
+tests
+results
+outputs
+benchmarks/datasets
+*.pyc
+*.pkl
+*.bin
+*.safetensors
+.env*
