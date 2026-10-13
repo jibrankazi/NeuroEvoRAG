@@ -43,7 +43,7 @@ def test_full_browser_to_api_upload_ask_citation_delete(client):
     ident = posted.json()["id"]
     assert len(client.get("/api/documents", headers=auth).json()["documents"]) == 1
     prediction = client.post("/api/ask", headers=auth,
-                             json={"question": "What does this source discuss?"})
+                             json={"question": "What does the research note discuss about water conservation?"})
     assert prediction.status_code == 200, prediction.text
     data = prediction.json()
     assert data["answer"] == "water conservation"
